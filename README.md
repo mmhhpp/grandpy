@@ -12,7 +12,9 @@ Patches and instructions for adding python and numpy to GNURadio for android
 
 sl4a.README
   Instructions for building sl4a without eclipse with ant for platform 21
+
 python.README
   Instructions for building Python for android 5.0
+
 modules.README
   Building GNU Radio with numpy for android
