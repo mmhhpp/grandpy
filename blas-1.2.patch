@@ -1,0 +1,39 @@
+diff -ur blas-1.2.orig/src/make.inc blas-1.2.arm/src/make.inc
+--- blas-1.2.orig/src/make.inc	2011-08-04 18:56:26.000000000 -0400
++++ blas-1.2.arm/src/make.inc	2015-05-31 11:12:13.910980142 -0400
+@@ -7,7 +7,7 @@
+ #
+ #  The machine (platform) identifier to append to the library names
+ #
+-PLAT = _LINUX
++PLAT = _arm
+ #  
+ #  Modify the FORTRAN and OPTS definitions to refer to the
+ #  compiler and desired compiler options for your machine.  NOOPT
+@@ -15,20 +15,20 @@
+ #  selected.  Define LOADER and LOADOPTS to refer to the loader and 
+ #  desired load options for your machine.
+ #
+-FORTRAN  = gfortran
+-OPTS     = -O3
++FORTRAN  = arm-linux-androideabi-gfortran
++OPTS     = -O3 -march=armv5te -fpic
+ DRVOPTS  = $(OPTS)
+ NOOPT    =
+-LOADER   = gfortran
++LOADER   = arm-linux-androideabi-gfortran
+ LOADOPTS =
+ #
+ #  The archiver and the flag(s) to use when building archive (library)
+ #  If you system has no ranlib, set RANLIB = echo.
+ #
+-ARCH     = ar
++ARCH     = arm-linux-androideabi-ar
+ ARCHFLAGS= cr
+-RANLIB   = ranlib
++RANLIB   = arm-linux-androideabi-ranlib
+ #
+ #  The location and name of the Reference BLAS library.
+ #
+-BLASLIB      = blas$(PLAT).a
++BLASLIB      = libblas.a

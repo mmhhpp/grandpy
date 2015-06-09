@@ -1,0 +1,65 @@
+
+=========================================================================
+   (C) Copyright 2015, Max H. Parke
+   These readme files are licensed under a Creative Commons Attribution
+   ShareAlike (CC BY-SA) License:
+   https://creativecommons.org/licenses/by-sa/4.0/
+
+   The associated patches are not copyrighted.
+=========================================================================
+
+Building GNU Radio with numpy for android
+=========================================
+
+1. Rebuild ndk toolchain compiler collection to include gfortran 
+     cd /opt/ndk/build/tools
+     patch -p1 /path-to-patches/ndk.patch
+     ./rebuild-all-prebuilt.sh
+
+2. Add the new toolchain to your PATH and confirm that
+     arm-linux-androideabi-gfortran
+and the rest of the arm ndk toolchain are now valid commands.
+
+3. download/unpack blas-1.2 and apply the patch; cd src; make
+
+4. copy resulting libblas.a to /opt/grandroid/lib
+
+5. download/unpack/patch lapack-3.5.0; copy liblapack.a to /opt/grandroid/lib
+
+6. download/build the distribution of python-for-android 
+   [see python.README]
+
+7. unpack and patch numpy-1.8.2
+
+8. make sure to set the env variables when building py4a modules
+     export PY4A=`dirname $BASH_SOURCE`
+     export PATH="${PATH}:${ANDROID_NDK_TOOLCHAIN_ROOT}/bin"
+     export PY4A_INC="${PY4A}/include"
+     export PY4A_LIB="${PY4A}/lib"
+     export PYTHONPATH="${PYTHONPATH}:${PY4A}/python"
+
+9. also set this env var
+   export ATLAS=None
+
+10. in numpy top dir
+    /path-to-python-for-android/python-build/host/bin/python setup.py build
+    /path-to-python-for-android/python-build/host/bin/python setup.py install --prefix=/opt/grandroid
+    NOTE: check the output from building to ensure that numpy was able to
+    locate the compiled blas/lapack you built, rather than any unoptimized
+    versions.
+
+11. build GR for android using the following additional/modified cmake options
+    -DPYTHON_LIBRARY=/path-to-python-for-android/python-build/host/lib/libpython2.6.a
+    -DPYTHON_INCLUDE_DIR=/path-to-python-for-android/python-build/host/include/python2.6
+    -DPYTHON_EXECUTABLE=/path-to-python-for-android/python-build/host/bin/python2.6
+    -DENABLE_STATIC_LIBS=False
+    -DENABLE_PYTHON=True
+
+12. copy the directories under /opt/grandroid/lib/python2.6/site-packages to the phone
+/data/data/com.googlecode.pythonforandroid/files/python/lib/python2.6/site-packages
+
+13. The pre-packaged SL4A and/or PY4A android apps can be downloaded from web,
+    or you can build your own versions of these apps (see sl4a.README).
+    When building numpy/GR for android, it will be necessary to follow at 
+    least the first four steps of sl4a.README).
+   

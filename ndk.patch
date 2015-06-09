@@ -1,0 +1,11 @@
+--- ./build-gcc.sh.orig	2014-11-03 21:54:18.000000000 -0500
++++ ./build-gcc.sh	2015-05-31 13:28:32.410810595 -0400
+@@ -81,7 +81,7 @@
+ PACKAGE_DIR=
+ register_var_option "--package-dir=<path>" PACKAGE_DIR "Create archive tarball in specific directory"
+ 
+-ENABLE_LANGUAGES="c,c++" # "fortran"
++ENABLE_LANGUAGES="c,c++,fortran"
+ register_var_option "--enable-languages=<name>" ENABLE_LANGUAGES "Experimental: specify which languages to build"
+ 
+ register_jobs_option

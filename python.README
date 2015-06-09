@@ -1,0 +1,31 @@
+
+=========================================================================
+   (C) Copyright 2015, Max H. Parke
+   These readme files are licensed under a Creative Commons Attribution
+   ShareAlike (CC BY-SA) License:
+   https://creativecommons.org/licenses/by-sa/4.0/
+
+   The associated patches are not copyrighted.
+=========================================================================
+
+Instructions for building Python
+================================
+
+1. First follow the procedures in the sl4a.README file (also in
+this directory), steps 1-4, to clone the repo, apply the patches/updates,
+and set env vars.
+
+2. cd python-build
+
+3. bash build.sh [build.sh may not run well in other shells]
+
+4. The result should be four ZIP files - three of these contain the built
+tree that will be transferred to the file system of the phone.  Currently,
+the GNU Radio and other modules are added to these manually.
+
+5. The location where python-build exists must also be kept in mind when 
+doing steps 10 and 11.
+
+Note: two separate python executables are produced: the former runs natively
+on the build host; the second is arm-android, including the needed PIE settings
+required for executables starting in Android 5.0.

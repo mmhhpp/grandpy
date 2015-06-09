@@ -1,0 +1,75 @@
+
+=========================================================================
+   (C) Copyright 2015, Max H. Parke
+   These readme files are licensed under a Creative Commons Attribution
+   ShareAlike (CC BY-SA) License:
+   https://creativecommons.org/licenses/by-sa/4.0/
+
+   The associated patches are not copyrighted.
+=========================================================================
+
+Instructions for building sl4a without eclipse with ant for android-21
+======================================================================
+
+1. clone the repo https://github.com/damonkohler/sl4a
+
+2. cd to the top level sl4a dir
+
+3. cat /path-to-patches/sl4a-build.patch | patch -p1
+   cat /path-to-patches/sl4a-python.patch | patch -p1
+   tar -zxf /path-to-patches/sl4a-build.tgz
+   sh /path-to-patches/sl4a-build.sh
+
+4. Ensure that env vars like ANDROID_SDK and JAVA_HOME exist and that PATH
+   contains the NDK root, as well as the NDK toolchain binaries
+
+5. Build the subprojects, in order as follows
+   Utils
+   Common
+   InterpreterForAndroid
+   ScriptingLayer
+   QuickAction
+
+The steps for building the subprojects are:
+
+5.1 cd to the named dir
+
+5.2 mkdir -p libs
+
+5.3 Make sure that libs/guava-r06.jar exists.  If not it can be found
+    in android/Common/libs in the checkout
+
+5.4 For QuickAction only, do this:
+    ../aapt.sh
+    It might be necessary to edit aapt.sh to set the proper path(s)
+
+5.5 For each subproject except the first, you must also pre-populate libs/
+    with all the jars from all the previous steps. So for example in
+    building the Common subproject, first populate libs/ with utils.jar
+    which can be found in ../Utils/dist .  Don't forget guava-r06.jar .
+
+5.6 ant
+
+6. Build the main projects
+   PythonForAndroid
+   ScriptingLayerForAndroid
+
+6.1 cd to the named dir
+
+6.2 mkdir -p libs
+
+6.3 pre-populate libs/ with all JARs that you built in step 5.
+    Don't forget guava-r06.jar .
+    The two main projects are separate and depend upon the subprojects
+    only, so when you pre-populate the respective libs/ dirs, don't put
+    the PythonForAndroid JAR file into ScriptingLayerForAndroid/libs/
+    (or vice-versa).
+
+6.4 ../aapt.sh
+
+6.5 ant debug
+
+6.6 the build should have produced the android APKs in bin/
+
+7. No doubt all the above could be put into an ant make XML file, (for
+   someone who knows how)...

@@ -1,0 +1,160 @@
+diff -urN /home/src/numpy-1.8.2.orig/numpy/core/src/multiarray/numpyos.c numpy-1.8.2/numpy/core/src/multiarray/numpyos.c
+--- /home/src/numpy-1.8.2.orig/numpy/core/src/multiarray/numpyos.c	2014-08-05 14:04:19.000000000 -0400
++++ numpy-1.8.2/numpy/core/src/multiarray/numpyos.c	2015-05-31 11:37:27.858948757 -0400
+@@ -165,8 +165,7 @@
+ static void
+ _change_decimal_from_locale_to_dot(char* buffer)
+ {
+-    struct lconv *locale_data = localeconv();
+-    const char *decimal_point = locale_data->decimal_point;
++    const char *decimal_point = ".";
+ 
+     if (decimal_point[0] != '.' || decimal_point[1] != 0) {
+         size_t decimal_point_len = strlen(decimal_point);
+@@ -450,8 +449,7 @@
+ NPY_NO_EXPORT double
+ NumPyOS_ascii_strtod(const char *s, char** endptr)
+ {
+-    struct lconv *locale_data = localeconv();
+-    const char *decimal_point = locale_data->decimal_point;
++    const char *decimal_point = ".";
+     size_t decimal_point_len = strlen(decimal_point);
+ 
+     char buffer[FLOAT_FORMATBUFLEN+1];
+diff -urN /home/src/numpy-1.8.2.orig/numpy/core/src/umath/umathmodule.c numpy-1.8.2/numpy/core/src/umath/umathmodule.c
+--- /home/src/numpy-1.8.2.orig/numpy/core/src/umath/umathmodule.c	2014-08-05 14:04:19.000000000 -0400
++++ numpy-1.8.2/numpy/core/src/umath/umathmodule.c	2015-05-31 12:01:50.058918444 -0400
+@@ -19,6 +19,7 @@
+ #define NPY_NO_DEPRECATED_API NPY_API_VERSION
+ 
+ #include "Python.h"
++#include "assert.h"
+ 
+ #include "npy_config.h"
+ #ifdef ENABLE_SEPARATE_COMPILATION
+@@ -532,3 +533,7 @@
+     }
+     return RETVAL;
+ }
++
++long double frexpl(long double value, int *p) {
++	assert (0 == 1); /* unimplemented in arm version */
++}
+diff -urN /home/src/numpy-1.8.2.orig/numpy/distutils/fcompiler/__init__.py numpy-1.8.2/numpy/distutils/fcompiler/__init__.py
+--- /home/src/numpy-1.8.2.orig/numpy/distutils/fcompiler/__init__.py	2014-08-05 14:04:19.000000000 -0400
++++ numpy-1.8.2/numpy/distutils/fcompiler/__init__.py	2015-05-31 11:37:27.858948757 -0400
+@@ -459,85 +459,17 @@
+ 
+         self.update_executables()
+ 
+-        # find_executables takes care of setting the compiler commands,
+-        # version_cmd, linker_so, linker_exe, ar, and ranlib
+-        self.find_executables()
+-
+-        noopt = self.distutils_vars.get('noopt', False)
+-        noarch = self.distutils_vars.get('noarch', noopt)
+-        debug = self.distutils_vars.get('debug', False)
+-
+-        f77 = self.command_vars.compiler_f77
+-        f90 = self.command_vars.compiler_f90
+-
+-        f77flags = []
+-        f90flags = []
+-        freeflags = []
+-        fixflags = []
+-
+-        if f77:
+-            f77flags = self.flag_vars.f77
+-        if f90:
+-            f90flags = self.flag_vars.f90
+-            freeflags = self.flag_vars.free
+-        # XXX Assuming that free format is default for f90 compiler.
+-        fix = self.command_vars.compiler_fix
+-        if fix:
+-            fixflags = self.flag_vars.fix + f90flags
+-
+-        oflags, aflags, dflags = [], [], []
+-        # examine get_flags_<tag>_<compiler> for extra flags
+-        # only add them if the method is different from get_flags_<tag>
+-        def get_flags(tag, flags):
+-            # note that self.flag_vars.<tag> calls self.get_flags_<tag>()
+-            flags.extend(getattr(self.flag_vars, tag))
+-            this_get = getattr(self, 'get_flags_' + tag)
+-            for name, c, flagvar in [('f77', f77, f77flags),
+-                                     ('f90', f90, f90flags),
+-                                     ('f90', fix, fixflags)]:
+-                t = '%s_%s' % (tag, name)
+-                if c and this_get is not getattr(self, 'get_flags_' + t):
+-                    flagvar.extend(getattr(self.flag_vars, t))
+-        if not noopt:
+-            get_flags('opt', oflags)
+-            if not noarch:
+-                get_flags('arch', aflags)
+-        if debug:
+-            get_flags('debug', dflags)
+-
+-        fflags = self.flag_vars.flags + dflags + oflags + aflags
+-
+-        if f77:
+-            self.set_commands(compiler_f77=[f77]+f77flags+fflags)
+-        if f90:
+-            self.set_commands(compiler_f90=[f90]+freeflags+f90flags+fflags)
+-        if fix:
+-            self.set_commands(compiler_fix=[fix]+fixflags+fflags)
+-
+-
+-        #XXX: Do we need LDSHARED->SOSHARED, LDFLAGS->SOFLAGS
+-        linker_so = self.linker_so
+-        if linker_so:
+-            linker_so_flags = self.flag_vars.linker_so
+-            if sys.platform.startswith('aix'):
+-                python_lib = get_python_lib(standard_lib=1)
+-                ld_so_aix = os.path.join(python_lib, 'config', 'ld_so_aix')
+-                python_exp = os.path.join(python_lib, 'config', 'python.exp')
+-                linker_so = [ld_so_aix] + linker_so + ['-bI:'+python_exp]
+-            self.set_commands(linker_so=linker_so+linker_so_flags)
+-
+-        linker_exe = self.linker_exe
+-        if linker_exe:
+-            linker_exe_flags = self.flag_vars.linker_exe
+-            self.set_commands(linker_exe=linker_exe+linker_exe_flags)
+-
+-        ar = self.command_vars.archiver
+-        if ar:
+-            arflags = self.flag_vars.ar
+-            self.set_commands(archiver=[ar]+arflags)
++        fortran_cmd = 'arm-linux-androideabi-gfortran' 
+ 
+-        self.set_library_dirs(self.get_library_dirs())
+-        self.set_libraries(self.get_libraries())
++        ldshared= "%s -shared" % fortran_cmd
++        ldshared+=" -Wl,-z,noexecstack -lpython2.6"
++        ldshared+=" -L%s " % os.environ["PY4A_LIB"]
++
++        fflags = ' -march=armv5te -fpic'
++        fortran_cmd += fflags
++
++        self.set_commands(compiler_f90=fortran_cmd.split())
++        self.set_commands(linker_so=ldshared)
+ 
+     def dump_properties(self):
+         """Print out the attributes of a compiler instance."""
+diff -urN /home/src/numpy-1.8.2.orig/setup.py numpy-1.8.2/setup.py
+--- /home/src/numpy-1.8.2.orig/setup.py	2014-08-09 06:41:42.000000000 -0400
++++ numpy-1.8.2/setup.py	2015-05-31 11:37:27.858948757 -0400
+@@ -235,5 +235,8 @@
+     return
+ 
+ 
++from py4a import patch_distutils
++patch_distutils()
++
+ if __name__ == '__main__':
+     setup_package()
+diff -urN /home/src/numpy-1.8.2.orig/site.cfg numpy-1.8.2/site.cfg
+--- /home/src/numpy-1.8.2.orig/site.cfg	1969-12-31 19:00:00.000000000 -0500
++++ numpy-1.8.2/site.cfg	2015-05-31 11:54:02.698928133 -0400
+@@ -0,0 +1,3 @@
++[DEFAULT]
++library_dirs = /opt/grandroid/lib
++include_dirs = /opt/grandroid/include
